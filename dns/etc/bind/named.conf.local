@@ -1,0 +1,10 @@
+# https://www.baeldung.com/linux/bind9-dns-server-configuration
+zone "test.edelivery.internal" {
+ type master;
+ file "/var/lib/bind/db.test.edelivery.internal";
+ # Allow SML (172.99.0.3) to perform dynamic DNS updates
+ allow-update { 172.99.0.3; };
+ allow-transfer { 172.99.0.0/24; };
+ # Allow queries from the entire network
+ allow-query { 172.99.0.0/24; };
+};

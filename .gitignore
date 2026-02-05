@@ -1,0 +1,5 @@
+.idea
+logs
+certs/*
+harmony/**/stores
+harmony/**/.env

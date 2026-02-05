@@ -1,0 +1,8 @@
+# Extensions to add to a certificate request
+basicConstraints       = CA:FALSE
+authorityKeyIdentifier = keyid:always, issuer:always
+keyUsage               = digitalSignature, keyEncipherment, dataEncipherment
+extendedKeyUsage       = clientAuth
+subjectAltName         = @alt_names
+[ alt_names ]
+DNS.1 = harmony-party-a

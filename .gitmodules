@@ -1,0 +1,3 @@
+[submodule "fi-efti-harmony"]
+	path = fi-efti-harmony
+	url = git@github.com:fintraffic-efti/fi-efti-harmony.git

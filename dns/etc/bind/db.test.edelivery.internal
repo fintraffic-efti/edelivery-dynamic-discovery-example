@@ -1,0 +1,16 @@
+$TTL 300
+@   IN  SOA ns1.test.edelivery.internal. admin.test.edelivery.internal. (
+        1        ; Serial
+        3600     ; Refresh
+        900      ; Retry
+        604800   ; Expire
+        300      ; Minimum
+)
+
+    IN  NS  ns1.test.edelivery.internal.
+
+ns1 IN  A   172.99.0.2
+
+; SML will dynamically create DNS records here for registered participants
+; Example: B-{hash}.iso6523-actorid-upis.{participant-id}.some-sml-zone.test.edelivery.internal
+

@@ -1,0 +1,274 @@
+services:
+  sml:
+    build:
+      context: ./sml
+      dockerfile: Dockerfile
+    networks:
+      dynamic-discovery-net:
+        ipv4_address: 172.99.0.3
+    depends_on:
+      - dns
+    ports:
+      - "127.0.0.1:7270:8080"
+    volumes:
+      - ./logs/sml/:/usr/local/tomcat/logs/
+      - ./sml/setenv.sh:/usr/local/tomcat/bin/setenv.sh
+      - ./certs:/certs:ro
+
+  sml-db:
+    image: mysql:8.0
+    networks:
+      dynamic-discovery-net:
+        ipv4_address: 172.99.0.4
+    environment:
+      - MYSQL_ROOT_PASSWORD=local-pwd-123
+      - MYSQL_DATABASE=harmony_sml
+      - MYSQL_USER=harmony_sml
+      - MYSQL_PASSWORD=local-pwd-123
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_bin
+    ports:
+      - "127.0.0.1:7290:3306"
+    restart: on-failure
+
+  sml-db-init:
+    image: mysql:8.0
+    profiles:
+      - init
+    networks:
+      dynamic-discovery-net:
+        ipv4_address: 172.99.0.5
+    depends_on:
+      - sml-db
+    environment:
+      - DB_HOST=sml-db
+      - DATABASE=harmony_sml
+      - DB_ADMIN=root
+      - DB_ADMIN_PASSWORD=local-pwd-123
+      - DB_USERNAME=harmony_sml
+      - DB_PASSWORD=local-pwd-123
+    volumes:
+      - ./sml-db-init/sql:/opt/sql
+      - ./sml-db-init/init.sh:/opt/init.sh
+    entrypoint: ./opt/init.sh
+    restart: on-failure
+
+  smp-1:
+    platform: linux/amd64
+    build:
+      context: ./smp
+      dockerfile: Dockerfile
+    networks:
+      dynamic-discovery-net:
+        ipv4_address: 172.99.0.6
+    depends_on:
+      - smp-db-1
+    ports:
+      - "127.0.0.1:7280:8080"
+    volumes:
+      - ./logs/smp-1/:/usr/local/tomcat/logs/
+      - ./smp/smp.config.properties:/usr/local/tomcat/lib/smp.config.properties
+      - ./certs:/certs:ro
+
+  smp-db-1:
+    image: mysql:8.0
+    networks:
+      dynamic-discovery-net:
+        ipv4_address: 172.99.0.7
+    environment:
+      - MYSQL_ROOT_PASSWORD=local-pwd-123
+      - MYSQL_DATABASE=harmony_smp
+      - MYSQL_USER=harmony_smp
+      - MYSQL_PASSWORD=local-pwd-123
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_bin
+    ports:
+      - "127.0.0.1:7291:3306"
+    restart: on-failure
+
+  smp-db-init-1:
+    image: mysql:8.0
+    profiles:
+      - init
+    networks:
+      dynamic-discovery-net:
+        ipv4_address: 172.99.0.8
+    depends_on:
+      - smp-db-1
+    environment:
+      - DB_HOST=smp-db-1
+      - DATABASE=harmony_smp
+      - DB_ADMIN=root
+      - DB_ADMIN_PASSWORD=local-pwd-123
+      - DB_USERNAME=harmony_smp
+      - DB_PASSWORD=local-pwd-123
+    volumes:
+      - ./smp-db-init/sql:/opt/sql
+      - ./smp-db-init/init.sh:/opt/init.sh
+    entrypoint: ./opt/init.sh
+    restart: on-failure
+
+  dns:
+    build:
+      context: ./dns
+      dockerfile: Dockerfile
+    networks:
+      dynamic-discovery-net:
+        ipv4_address: 172.99.0.2
+    volumes:
+      # Comment in /etc/bind/named.conf: "If you are just adding zones, please do that in /etc/bind/named.conf.local"
+      - ./dns/etc/bind/named.conf.local:/etc/bind/named.conf.local
+      - ./dns/etc/bind/db.test.edelivery.internal:/var/lib/bind/db.test.edelivery.internal
+
+  harmony-party-a:
+    build:
+      context: ./fi-efti-harmony
+      dockerfile: Dockerfile
+    networks:
+      dynamic-discovery-net:
+    dns:
+      - 172.99.0.2  # Use local DNS server for dynamic discovery
+    env_file:
+      # ./start.sh generates env file
+      - path: harmony/party-a/.env
+        required: false
+    environment:
+      - DB_HOST=db-party-a
+      - DB_SCHEMA=harmony_ap
+      - DB_PASSWORD=local-pwd-123
+      - ADMIN_PASSWORD=local-pwd-123
+      # Simplify plugin password requirements for development setup
+      - DOMIBUS_PLUGIN_PASSWORDPOLICY_PATTERN=^.+$
+      - PARTY_NAME=party-a
+      - SERVER_FQDN=harmony-party-a
+      - SECURITY_KEYSTORE_PASSWORD=ap-keystore-party-a
+      - SECURITY_TRUSTSTORE_PASSWORD=ap-truststore-party-a
+      - TLS_KEYSTORE_PASSWORD=tls-keystore-party-a
+      - TLS_TRUSTSTORE_PASSWORD=tls-truststore-party-a
+      - DOMIBUS_AUTH_UNSECURELOGINALLOWED=true
+      - USE_DYNAMIC_DISCOVERY=true
+      - domibus_smlzone=some-sml-zone.test.edelivery.internal
+      - domibus_dynamicdiscovery_client_specification=OASIS
+      - domibus_dynamicdiscovery_client_dns_lookup_types=NAPTR
+    restart: no
+    ports:
+      - "127.0.0.1:11180:8443"
+    depends_on:
+      - db-party-a
+      - dns
+      - sml
+      - smp-1
+
+  db-party-a:
+    image: mysql:8
+    networks:
+      dynamic-discovery-net:
+    environment:
+      - MYSQL_ROOT_PASSWORD=local-pwd-123
+      - MYSQL_DATABASE=harmony_ap
+      - MYSQL_USER=harmony_ap
+      - MYSQL_PASSWORD=local-pwd-123
+    command:
+      - "--character-set-server=utf8mb4"
+      - "--collation-server=utf8mb4_bin"
+    restart: on-failure
+
+  harmony-party-b:
+    build:
+        context: ./fi-efti-harmony
+        dockerfile: Dockerfile
+    networks:
+      dynamic-discovery-net:
+    dns:
+      - 172.99.0.2  # Use local DNS server for dynamic discovery
+    env_file:
+      # ./start.sh generates env file
+      - path: harmony/party-b/.env
+        required: false
+    environment:
+      - DB_HOST=db-party-b
+      - DB_SCHEMA=harmony_ap
+      - DB_PASSWORD=local-pwd-123
+      - ADMIN_PASSWORD=local-pwd-123
+      # Simplify plugin password requirements for development setup
+      - DOMIBUS_PLUGIN_PASSWORDPOLICY_PATTERN=^.+$
+      - PARTY_NAME=party-b
+      - SERVER_FQDN=harmony-party-b
+      - SECURITY_KEYSTORE_PASSWORD=ap-keystore-party-b
+      - SECURITY_TRUSTSTORE_PASSWORD=ap-truststore-party-b
+      - TLS_KEYSTORE_PASSWORD=tls-keystore-party-b
+      - TLS_TRUSTSTORE_PASSWORD=tls-truststore-party-b
+      - DOMIBUS_AUTH_UNSECURELOGINALLOWED=true
+      - USE_DYNAMIC_DISCOVERY=true
+      - domibus_smlzone=some-sml-zone.test.edelivery.internal
+      - domibus_dynamicdiscovery_client_specification=OASIS
+      - domibus_dynamicdiscovery_client_dns_lookup_types=NAPTR
+    restart: no
+    ports:
+      - "127.0.0.1:11181:8443"
+    depends_on:
+      - db-party-b
+
+  db-party-b:
+    image: mysql:8
+    networks:
+      dynamic-discovery-net:
+    environment:
+      - MYSQL_ROOT_PASSWORD=local-pwd-123
+      - MYSQL_DATABASE=harmony_ap
+      - MYSQL_USER=harmony_ap
+      - MYSQL_PASSWORD=local-pwd-123
+    command:
+      - "--character-set-server=utf8mb4"
+      - "--collation-server=utf8mb4_bin"
+    restart: on-failure
+
+  backend-service-party-a:
+    build:
+      context: ./python-helper
+      dockerfile: Dockerfile
+    networks:
+      dynamic-discovery-net:
+    depends_on:
+      - harmony-party-a
+    command: >
+      sh -c "python backend_service.py"
+    restart: no
+
+  backend-service-party-b:
+    build:
+      context: ./python-helper
+      dockerfile: Dockerfile
+    networks:
+      dynamic-discovery-net:
+    depends_on:
+      - harmony-party-b
+    command: >
+      sh -c "python backend_service.py"
+    restart: no
+
+  edelivery-send:
+    build:
+      context: ./python-helper
+      dockerfile: Dockerfile
+    profiles:
+      - test
+    networks:
+      dynamic-discovery-net:
+    depends_on:
+      - harmony-party-a
+    command: >
+      sh -c "python edelivery-send.py --from-party=${FROM_PARTY}"
+    restart: no
+
+networks:
+  dynamic-discovery-net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.99.0.0/24
+          gateway: 172.99.0.1
+          # Specify dynamic IP range to not overlap with static IPs
+          ip_range: 172.99.0.64/26
