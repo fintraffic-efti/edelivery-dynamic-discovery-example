@@ -7,6 +7,9 @@ USER root
 RUN apt-get -qqy update \
     && apt-get -qqy install bind9 bind9utils bind9-doc
 
+# Create the directory for the PID file and ensure bind user can write to it
+RUN mkdir -p /run/named && chown bind:bind /run/named
+
 EXPOSE 53/tcp
 EXPOSE 53/udp
 
