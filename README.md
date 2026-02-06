@@ -75,7 +75,10 @@ The startup scripts require a linux or macOS environment. The following software
    ```shell
    ./start.sh
    ```
-2. Register resources in SMP UI
+2. Check DNS entries:
+    1. Open http://localhost:7270/edelivery-sml/listDNS
+    2. You should see only an entry for `ns1.test.edelivery.internal.` 
+3. Register resources in SMP UI
     1. Open http://localhost:7280/harmonysmp/ui/#/ and login with username `system` and password `local-pwd-123`
     2. System settings > Domain > "somedomaincode" > SML Integration > Register
     3. Administration > Edit resources
@@ -90,6 +93,9 @@ The startup scripts require a linux or macOS environment. The following software
     6. Administration > Edit resources
         1. Select "somedomaincode" and "groupa" > Subresources "some-action-value" > Edit
         2. Select version 2 > Publish
+4. Check DNS entries:
+    1. Open http://localhost:7270/edelivery-sml/listDNS
+    2. Now you should see 5 entries for names ending with `.some-sml-zone.test.edelivery.internal.`
 
 ### Testing
 
