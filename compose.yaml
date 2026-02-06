@@ -158,7 +158,6 @@ services:
     depends_on:
       - db-party-a
       - dns
-      - sml
       - smp-1
 
   db-party-a:
@@ -210,6 +209,8 @@ services:
       - "127.0.0.1:11181:8443"
     depends_on:
       - db-party-b
+      - dns
+      - smp-1
 
   db-party-b:
     image: mysql:8
