@@ -6,4 +6,4 @@ set -o pipefail
 
 cd "$(dirname $0)"
 
-FROM_PARTY=$1 docker compose --profile test up --force-recreate --build edelivery-send
+FROM_PARTY=$1 docker compose --profile test up --force-recreate --build --no-deps edelivery-send
