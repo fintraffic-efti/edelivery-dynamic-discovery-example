@@ -45,6 +45,31 @@ This is an example for eDelivery Dynamic Discovery setup. It includes:
 * Docker compose stack that connects it all together.
 * Utilities for sending and receiving messages.
 
+```mermaid
+
+flowchart TB
+    ap-a@{ shape: rect, label: "eDelivery AP 'a'
+    (harmony-party-a)" }
+    ap-b@{ shape: rect, label: "eDelivery AP 'b'
+    (harmony-party-b)" }
+    dns@{ shape: cyl, label: "DNS
+    (dns)" }
+    smp-1@{ shape: rect, label: "SMP
+    (smp-1)" }
+    sml@{ shape: rect, label: "SML
+    (sml)" }
+    
+    ap-a -.-> dns
+    ap-a -.-> smp-1
+    ap-a --> ap-b
+    ap-b -.-> dns
+    ap-b -.-> smp-1
+    ap-b --> ap-a
+    smp-1 --> sml
+    sml --> dns
+
+```
+
 The UIs are available at:
 
 * SML: http://localhost:7270/edelivery-sml/
