@@ -22,6 +22,7 @@
     * [Harmony/Domibus](#harmonydomibus)
     * [SML](#sml)
     * [SMP](#smp)
+  * [Contact](#contact)
 <!-- TOC -->
 
 ## Introduction
@@ -365,3 +366,7 @@ example: [Using Dynamic Discovery with Domibus Webinar](https://ec.europa.eu/dig
 * https://docs.edelivery.tech.ec.europa.eu/domismp/prod/5.1/
 * https://github.com/nordic-institute/harmony-common/blob/main/doc/harmony-smp_installation_guide.md
 * https://github.com/nordic-institute/harmony-common/blob/main/doc/dynamic_discovery_configuration_guide.md
+
+## Contact
+
+For questions and suggestions you may open an issue in this repository.
