@@ -162,6 +162,8 @@ if __name__ == "__main__":
         print(f"Unknown from-party: {from_party}", file=sys.stderr)
         sys.exit(1)
 
+    print(f"Sending message from \"{config['from_party_id']}\" to \"{config['final_recipient']}\" via AP \"{config['wsplugin_url']}\"...")
+
     send_message(
         from_party_id=config["from_party_id"],
         from_party_type=config["from_party_type"],
