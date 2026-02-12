@@ -2,7 +2,7 @@ FROM eclipse-temurin:21 AS build
 
 USER root
 
-ADD https://github.com/nordic-institute/harmony-smp.git /tmp/harmony-smp
+ADD "https://github.com/nordic-institute/harmony-smp.git#harmony-v2.2.1" /tmp/harmony-smp
 
 WORKDIR /tmp/harmony-smp
 # Cache package directories to speed up local development when there are other changes to the layer
